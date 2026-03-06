@@ -246,14 +246,16 @@ server.tool(
 
 server.tool(
   'register_group',
-  `Register a new WhatsApp group so the agent can respond to messages there. Main group only.
+  `Register a new chat or group so the agent can respond to messages there. Main group only.
+
+Works for both WhatsApp groups (e.g., "123456@g.us") and Telegram chats/groups (e.g., "tg:123456" or "tg:-100123456").
 
 Use available_groups.json to find the JID for a group. The folder name should be lowercase with hyphens (e.g., "family-chat").`,
   {
-    jid: z.string().describe('The WhatsApp JID (e.g., "120363336345536173@g.us")'),
+    jid: z.string().describe('The JID - WhatsApp: "123456@g.us", Telegram: "tg:123456" or "tg:-1001234567890"'),
     name: z.string().describe('Display name for the group'),
     folder: z.string().describe('Folder name for group files (lowercase, hyphens, e.g., "family-chat")'),
-    trigger: z.string().describe('Trigger word (e.g., "@Andy")'),
+    trigger: z.string().describe('Trigger word (e.g., "@King")'),
   },
   async (args) => {
     if (!isMain) {

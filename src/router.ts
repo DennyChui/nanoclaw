@@ -1,4 +1,5 @@
 import { Channel, NewMessage } from './types.js';
+import { TelegramChannel } from './channels/telegram.js';
 
 export function escapeXml(s: string): string {
   if (!s) return '';
@@ -35,6 +36,23 @@ export function routeOutbound(
   const channel = channels.find((c) => c.ownsJid(jid) && c.isConnected());
   if (!channel) throw new Error(`No channel for JID: ${jid}`);
   return channel.sendMessage(jid, text);
+}
+
+export async function routeVoice(
+  channels: Channel[],
+  jid: string,
+  audioPath: string,
+  caption?: string,
+): Promise<void> {
+  const channel = channels.find((c) => c.ownsJid(jid) && c.isConnected());
+  if (!channel) throw new Error(`No channel for JID: ${jid}`);
+
+  // Only Telegram supports voice messages currently
+  if (channel instanceof TelegramChannel) {
+    return channel.sendVoice(jid, audioPath, caption);
+  }
+
+  throw new Error(`Channel ${channel.name} does not support voice messages`);
 }
 
 export function findChannel(

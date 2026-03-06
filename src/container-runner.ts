@@ -204,7 +204,11 @@ function buildVolumeMounts(
  * Secrets are never written to disk or mounted as files.
  */
 function readSecrets(): Record<string, string> {
-  return readEnvFile(['CLAUDE_CODE_OAUTH_TOKEN', 'ANTHROPIC_API_KEY']);
+  return readEnvFile([
+    'CLAUDE_CODE_OAUTH_TOKEN',
+    'ANTHROPIC_API_KEY',
+    'ANTHROPIC_AUTH_TOKEN',
+  ]);
 }
 
 function buildContainerArgs(
@@ -215,6 +219,26 @@ function buildContainerArgs(
 
   // Pass host timezone so container's local time matches the user's
   args.push('-e', `TZ=${TIMEZONE}`);
+
+  // Pass proxy settings if configured
+  // Convert localhost/127.0.0.1 to host.docker.internal for Docker Desktop
+  let httpsProxy = process.env.HTTPS_PROXY || process.env.https_proxy;
+  if (httpsProxy) {
+    httpsProxy = httpsProxy.replace(
+      /127\.0\.0\.1|localhost/,
+      'host.docker.internal',
+    );
+    args.push('-e', `HTTPS_PROXY=${httpsProxy}`);
+    args.push('-e', `HTTP_PROXY=${httpsProxy}`);
+  }
+  const anthropicBaseUrl = process.env.ANTHROPIC_BASE_URL;
+  if (anthropicBaseUrl) {
+    args.push('-e', `ANTHROPIC_BASE_URL=${anthropicBaseUrl}`);
+  }
+  const anthropicAuthToken = process.env.ANTHROPIC_AUTH_TOKEN;
+  if (anthropicAuthToken) {
+    args.push('-e', `ANTHROPIC_AUTH_TOKEN=${anthropicAuthToken}`);
+  }
 
   // Run as host user so bind-mounted files are accessible.
   // Skip when running as root (uid 0), as the container's node user (uid 1000),
