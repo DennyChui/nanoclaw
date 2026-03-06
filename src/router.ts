@@ -1,5 +1,5 @@
 import { Channel, NewMessage } from './types.js';
-import { TelegramChannel } from './channels/telegram.js';
+import { formatLocalTime } from './timezone.js';
 
 export function escapeXml(s: string): string {
   if (!s) return '';
@@ -10,12 +10,18 @@ export function escapeXml(s: string): string {
     .replace(/"/g, '&quot;');
 }
 
-export function formatMessages(messages: NewMessage[]): string {
-  const lines = messages.map(
-    (m) =>
-      `<message sender="${escapeXml(m.sender_name)}" time="${m.timestamp}">${escapeXml(m.content)}</message>`,
-  );
-  return `<messages>\n${lines.join('\n')}\n</messages>`;
+export function formatMessages(
+  messages: NewMessage[],
+  timezone: string,
+): string {
+  const lines = messages.map((m) => {
+    const displayTime = formatLocalTime(m.timestamp, timezone);
+    return `<message sender="${escapeXml(m.sender_name)}" time="${escapeXml(displayTime)}">${escapeXml(m.content)}</message>`;
+  });
+
+  const header = `<context timezone="${escapeXml(timezone)}" />\n`;
+
+  return `${header}<messages>\n${lines.join('\n')}\n</messages>`;
 }
 
 export function stripInternalTags(text: string): string {
@@ -36,23 +42,6 @@ export function routeOutbound(
   const channel = channels.find((c) => c.ownsJid(jid) && c.isConnected());
   if (!channel) throw new Error(`No channel for JID: ${jid}`);
   return channel.sendMessage(jid, text);
-}
-
-export async function routeVoice(
-  channels: Channel[],
-  jid: string,
-  audioPath: string,
-  caption?: string,
-): Promise<void> {
-  const channel = channels.find((c) => c.ownsJid(jid) && c.isConnected());
-  if (!channel) throw new Error(`No channel for JID: ${jid}`);
-
-  // Only Telegram supports voice messages currently
-  if (channel instanceof TelegramChannel) {
-    return channel.sendVoice(jid, audioPath, caption);
-  }
-
-  throw new Error(`Channel ${channel.name} does not support voice messages`);
 }
 
 export function findChannel(

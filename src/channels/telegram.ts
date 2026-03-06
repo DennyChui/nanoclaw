@@ -2,7 +2,11 @@ import { Bot, InputFile } from 'grammy';
 import { HttpsProxyAgent } from 'https-proxy-agent';
 import { createReadStream } from 'fs';
 
-import { ASSISTANT_NAME, TRIGGER_PATTERN } from '../config.js';
+import {
+  ASSISTANT_NAME,
+  TELEGRAM_BOT_TOKEN,
+  TRIGGER_PATTERN,
+} from '../config.js';
 import { logger } from '../logger.js';
 import {
   Channel,
@@ -10,6 +14,7 @@ import {
   OnInboundMessage,
   RegisteredGroup,
 } from '../types.js';
+import { registerChannel } from './registry.js';
 
 export interface TelegramChannelOpts {
   onMessage: OnInboundMessage;
@@ -295,3 +300,9 @@ export class TelegramChannel implements Channel {
     }
   }
 }
+
+// Self-register with the channel registry
+registerChannel('telegram', (opts) => {
+  if (!TELEGRAM_BOT_TOKEN) return null;
+  return new TelegramChannel(TELEGRAM_BOT_TOKEN, opts);
+});
