@@ -33,3 +33,8 @@ groups/global/*
 .nanoclaw/
 
 agents-sdk-docs
+
+# Local documentation
+review/
+claudedocs/
+kimi-export-*.md
