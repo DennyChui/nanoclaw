@@ -106,8 +106,15 @@ export class TelegramChannel implements Channel {
       }
 
       // Store chat metadata for discovery
-      const isGroup = ctx.chat.type === 'group' || ctx.chat.type === 'supergroup';
-      this.opts.onChatMetadata(chatJid, timestamp, chatName, 'telegram', isGroup);
+      const isGroup =
+        ctx.chat.type === 'group' || ctx.chat.type === 'supergroup';
+      this.opts.onChatMetadata(
+        chatJid,
+        timestamp,
+        chatName,
+        'telegram',
+        isGroup,
+      );
 
       // Only deliver full message for registered groups
       const group = this.opts.registeredGroups()[chatJid];
@@ -150,8 +157,15 @@ export class TelegramChannel implements Channel {
         'Unknown';
       const caption = ctx.message.caption ? ` ${ctx.message.caption}` : '';
 
-      const isGroup = ctx.chat.type === 'group' || ctx.chat.type === 'supergroup';
-      this.opts.onChatMetadata(chatJid, timestamp, undefined, 'telegram', isGroup);
+      const isGroup =
+        ctx.chat.type === 'group' || ctx.chat.type === 'supergroup';
+      this.opts.onChatMetadata(
+        chatJid,
+        timestamp,
+        undefined,
+        'telegram',
+        isGroup,
+      );
       this.opts.onMessage(chatJid, {
         id: ctx.message.message_id.toString(),
         chat_jid: chatJid,
@@ -165,9 +179,7 @@ export class TelegramChannel implements Channel {
 
     this.bot.on('message:photo', (ctx) => storeNonText(ctx, '[Photo]'));
     this.bot.on('message:video', (ctx) => storeNonText(ctx, '[Video]'));
-    this.bot.on('message:voice', (ctx) =>
-      storeNonText(ctx, '[Voice message]'),
-    );
+    this.bot.on('message:voice', (ctx) => storeNonText(ctx, '[Voice message]'));
     this.bot.on('message:audio', (ctx) => storeNonText(ctx, '[Audio]'));
     this.bot.on('message:document', (ctx) => {
       const name = ctx.message.document?.file_name || 'file';
@@ -230,7 +242,11 @@ export class TelegramChannel implements Channel {
     }
   }
 
-  async sendVoice(jid: string, audioPath: string, caption?: string): Promise<void> {
+  async sendVoice(
+    jid: string,
+    audioPath: string,
+    caption?: string,
+  ): Promise<void> {
     if (!this.bot) {
       logger.warn('Telegram bot not initialized');
       return;
@@ -239,14 +255,17 @@ export class TelegramChannel implements Channel {
     try {
       const numericId = jid.replace(/^tg:/, '');
       const audioStream = createReadStream(audioPath);
-      
+
       await this.bot.api.sendVoice(numericId, new InputFile(audioStream), {
         caption: caption,
       });
-      
+
       logger.info({ jid, audioPath }, 'Telegram voice message sent');
     } catch (err) {
-      logger.error({ jid, audioPath, err }, 'Failed to send Telegram voice message');
+      logger.error(
+        { jid, audioPath, err },
+        'Failed to send Telegram voice message',
+      );
     }
   }
 
