@@ -4,6 +4,7 @@ import { createReadStream } from 'fs';
 
 import {
   ASSISTANT_NAME,
+  HTTPS_PROXY,
   TELEGRAM_BOT_TOKEN,
   TRIGGER_PATTERN,
 } from '../config.js';
@@ -36,7 +37,7 @@ export class TelegramChannel implements Channel {
 
   async connect(): Promise<void> {
     // Configure proxy if HTTPS_PROXY is set
-    const proxyUrl = process.env.HTTPS_PROXY || process.env.https_proxy;
+    const proxyUrl = HTTPS_PROXY;
     const botConfig = proxyUrl
       ? {
           client: {
