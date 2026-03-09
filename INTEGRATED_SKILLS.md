@@ -139,6 +139,82 @@ bash skills/video-translation/scripts/replace_audio.sh \
 
 ---
 
+### 7. read-tencent-docs ⭐ (新增)
+**路径**: `.claude/skills/read-tencent-docs/`
+
+读取公开分享的腾讯文档表格数据，无需登录。
+
+**触发词**:
+- "腾讯文档", "Tencent Docs", "docs.qq.com"
+- "读取腾讯文档", "导出腾讯表格"
+
+**使用方法**:
+```bash
+# 读取并显示表格
+python3 .claude/skills/read-tencent-docs/scripts/fetch_sheet.py \
+  "https://docs.qq.com/sheet/Dxxxx?tab=BB08J2"
+
+# 导出为 CSV
+python3 .claude/skills/read-tencent-docs/scripts/fetch_sheet.py \
+  "URL" --format csv --output data.csv
+
+# 导出为 JSON
+python3 .claude/skills/read-tencent-docs/scripts/fetch_sheet.py \
+  "URL" --format json --output data.json
+```
+
+---
+
+### 8. read-tencent-docs-private ⭐ (新增)
+**路径**: `.claude/skills/read-tencent-docs-private/`
+
+通过浏览器自动化访问需要登录的腾讯文档私有表格。
+
+**触发词**:
+- "private 腾讯文档", "需要登录的表格"
+- "access denied", "login required"
+
+**使用方法**:
+```bash
+# 1. 首次登录（保存会话）
+python3 .claude/skills/read-tencent-docs-private/scripts/fetch_private_sheet.py login
+
+# 2. 读取私有表格
+python3 .claude/skills/read-tencent-docs-private/scripts/fetch_private_sheet.py fetch \
+  "https://docs.qq.com/sheet/Dxxxx" \
+  --format csv --output data.csv
+```
+
+**依赖**: `pip install playwright && playwright install chromium`
+
+---
+
+### 9. qrcode-toolkit ⭐ (新增)
+**路径**: `.claude/skills/qrcode-toolkit/`
+
+二维码解码和生成工具包，支持从图片/屏幕/剪贴板读取二维码，以及生成各种类型的二维码。
+
+**触发词**:
+- "QR code", "二维码", "scan QR", "generate QR"
+- "decode barcode", "read barcode"
+
+**使用方法**:
+```bash
+# 解码二维码
+python3 .claude/skills/qrcode-toolkit/scripts/decode_qr.py image.png
+python3 .claude/skills/qrcode-toolkit/scripts/decode_qr.py --clipboard
+python3 .claude/skills/qrcode-toolkit/scripts/decode_qr.py --screenshot
+
+# 生成二维码
+python3 .claude/skills/qrcode-toolkit/scripts/generate_qr.py "Hello" --output qr.png
+python3 .claude/skills/qrcode-toolkit/scripts/generate_qr.py --wifi "Network" "pass" --output wifi.png
+python3 .claude/skills/qrcode-toolkit/scripts/generate_qr.py --vcard --name "John" --phone "123" --output contact.png
+```
+
+**依赖**: `pip install qrcode[pil] pyzbar opencv-python Pillow`
+
+---
+
 ## 🔧 依赖要求
 
 ### 必需依赖
@@ -158,7 +234,7 @@ bash skills/video-translation/scripts/replace_audio.sh \
 
 ## 📁 文件位置
 
-所有 Skills 位于:
+### Agent Skills (容器内)
 ```
 data/sessions/main/.claude/skills/
 ├── agent-browser/
@@ -169,9 +245,31 @@ data/sessions/main/.claude/skills/
 └── video-translation/
 ```
 
+### NanoClaw Skills (项目级)
+```
+.claude/skills/
+├── read-tencent-docs/          # 公开表格读取
+├── read-tencent-docs-private/  # 私有表格读取（需登录）
+├── qrcode-toolkit/             # 二维码工具包
+├── setup/
+├── customize/
+├── debug/
+└── ...
+```
+
 ---
 
 ## 📝 更新日志
+
+### 2026-03-09
+- 新增 `qrcode-toolkit` Skill - 二维码解码和生成工具
+- 支持从图片/屏幕/剪贴板读取二维码
+- 支持生成 URL/WiFi/联系人/邮件等类型二维码
+
+### 2026-03-08
+- 新增 `read-tencent-docs` Skill - 读取公开分享的腾讯文档表格
+- 新增 `read-tencent-docs-private` Skill - 通过浏览器自动化读取私有表格
+- 更新所有群组的 CLAUDE.md 以包含新能力
 
 ### 2026-03-04
 - 从 Agent 环境集成 NoizAI/skills 仓库的 5 个 Skills
